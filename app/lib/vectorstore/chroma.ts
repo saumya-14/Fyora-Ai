@@ -1,5 +1,5 @@
 // import { ChromaClient, CloudClient } from 'chromadb';
-// import { HuggingFaceInferenceEmbeddings } from '@langchain/community/embeddings/hf';
+import { HuggingFaceInferenceEmbeddings } from '@langchain/community/embeddings/hf';
 // import path from 'path';
 
 
@@ -126,11 +126,11 @@
 //     };
 //   }
 // }
-import { ChromaClient } from "chromadb";
+import { ChromaClient, EmbeddingFunction } from "chromadb";
 
 // Initialize the cloud client
 export const chromaClient = new ChromaClient({
-    path: process.env.CHROMA_SERVER_URL,
+    path:process.env.HUGGINGFACE_API_KEY,
     // Authentication is required for cloud
     fetchOptions: {
         headers: {
@@ -140,9 +140,15 @@ export const chromaClient = new ChromaClient({
     }
 });
 
+const embedder = new HuggingFaceInferenceEmbeddings({
+  apiKey: process.env.HUGGINGFACE_API_KEY!,
+  // Standard model for 2026
+  model: 'sentence-transformers/all-MiniLM-L6-v2',
+});
+
 export const getCollection = async (name: string) => {
-    return await chromaClient.getOrCreateCollection({
-        name: name,
-        // Ensure you have an embedding function defined
-    });
+  return await chromaClient.getOrCreateCollection({
+      name: name,
+      embeddingFunction: embedder as any, // Now this matches the expected type
+  });
 };
